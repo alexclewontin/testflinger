@@ -1,0 +1,50 @@
+#cloud-config
+hostname: megademo-dut
+manage_etc_hosts: true
+package_update: true
+package_upgrade: false
+packages:
+  - python3
+  - python3-pip
+  - linux-firmware
+  - pciutils
+  - usbutils
+  - dmidecode
+  - net-tools
+  - mesa-utils
+  - xorg
+  - xinit
+
+users:
+  - name: "{{SSH_USER}}"
+    gecos: "{{SSH_USER}}"
+    groups:
+      - adm
+      - sudo
+    shell: /bin/bash
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    lock_passwd: true
+    ssh_authorized_keys:
+      - "{{SSH_PUBLIC_KEY}}"
+
+ssh_pwauth: false
+
+disable_root: true
+
+write_files:
+  - path: /etc/motd
+    permissions: '0644'
+    content: |
+      Testflinger QEMU DUT — megademo
+  - path: /etc/default/grub.d/99-megademo-serial.cfg
+    permissions: '0644'
+    content: |
+      GRUB_CMDLINE_LINUX_DEFAULT="console=tty1 console=ttyS0,115200n8"
+
+bootcmd:
+  - systemctl enable serial-getty@ttyS0.service
+
+runcmd:
+  - update-grub
+
+final_message: "megademo cloud-init finished"

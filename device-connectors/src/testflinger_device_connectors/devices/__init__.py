@@ -55,6 +55,7 @@ DEVICE_CONNECTORS = (
     "oemscript",
     "zapper_iot",
     "zapper_kvm",
+    "qemu_connector",
 )
 
 

@@ -1,0 +1,83 @@
+name: microtestflinger
+version: "0.1-hackathon"
+summary: All-in-one local Testflinger for development testing
+description: |
+  Bundles Testflinger server, agent, CLI, and device connectors (including
+  qemu_connector) into a single snap for local development and demo use.
+  Includes MongoDB 8.0 — no external services required.
+confinement: devmode
+base: core24
+grade: devel
+
+apps:
+  mongod:
+    command: bin/start-mongod.sh
+    daemon: simple
+    install-mode: disable
+
+  server:
+    command: bin/start-server.sh
+    daemon: simple
+    install-mode: disable
+    after: [mongod]
+
+  agent:
+    command: bin/start-agent.sh
+    daemon: simple
+    install-mode: disable
+    after: [server]
+
+  cli:
+    command: bin/testflinger-cli
+    environment:
+      TESTFLINGER_SERVER: http://localhost:5000
+
+  setup:
+    command: bin/setup.sh
+
+parts:
+  testflinger:
+    plugin: python
+    # Build from the repo root; each component is a sub-directory
+    source: .
+    override-build: |
+      python3 -m venv ${CRAFT_PART_INSTALL}
+      ${CRAFT_PART_INSTALL}/bin/pip install -U pip setuptools wheel
+      # marshmallow<4: testflinger uses fields.Boolean(default=) removed in 4.x
+      ${CRAFT_PART_INSTALL}/bin/pip install "marshmallow<4"
+      ${CRAFT_PART_INSTALL}/bin/pip install ${CRAFT_PART_SRC}/common
+      ${CRAFT_PART_INSTALL}/bin/pip install ${CRAFT_PART_SRC}/server
+      ${CRAFT_PART_INSTALL}/bin/pip install ${CRAFT_PART_SRC}/agent
+      ${CRAFT_PART_INSTALL}/bin/pip install ${CRAFT_PART_SRC}/cli
+      ${CRAFT_PART_INSTALL}/bin/pip install ${CRAFT_PART_SRC}/device-connectors
+      # Re-pin after transitive upgrades
+      ${CRAFT_PART_INSTALL}/bin/pip install "marshmallow<4" --force-reinstall
+      # flask-pymongo 3.x uses private pymongo APIs removed in 4.7+
+      ${CRAFT_PART_INSTALL}/bin/pip install "pymongo[encryption]<4.7" --force-reinstall
+
+  mongodb:
+    plugin: nil
+    source: https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu2404-8.0.9.tgz
+    override-build: |
+      install -D -m 755 bin/mongod ${CRAFT_PART_INSTALL}/bin/mongod
+    stage-packages:
+      - libcurl4t64
+      - libldap2
+      - libnghttp2-14
+      - libpsl5t64
+      - librtmp1
+      - libsasl2-2
+      - libssh-4
+
+  wrapper-scripts:
+    plugin: dump
+    source: snap/local/
+    organize:
+      "*.sh": bin/
+      "*.py": bin/
+
+  config-files:
+    plugin: dump
+    source: snap/conf/
+    organize:
+      "*": etc/microtestflinger/

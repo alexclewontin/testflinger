@@ -1,0 +1,22 @@
+# QEMU device connector configuration for megademo
+device_ip: localhost
+ssh_port: 2222
+ssh_user: ubuntu
+ssh_key: /tmp/microtestflinger/qemu_id_ed25519
+
+# Directory where cloud images are cached (downloaded on first use per distro)
+qemu_image_dir: /tmp/microtestflinger/images
+
+qemu_memory: 4096
+qemu_cpus: 2
+
+# GPU device — override per-job via provision_data.qemu_display
+qemu_display: virtio-vga
+
+# VNC disabled by default — set per-job via provision_data.qemu_vnc
+# e.g. provision_data: { qemu_vnc: ":59" }  → port 5959
+qemu_vnc: ~
+
+# Cloud-init templates — live in $SNAP_DATA, editable without snap rebuild
+cloud_init_user_data: /var/snap/microtestflinger/current/cloud-init-user-data.yaml
+cloud_init_meta_data: /var/snap/microtestflinger/current/cloud-init-meta-data.yaml

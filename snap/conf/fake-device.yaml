@@ -1,0 +1,3 @@
+# Fake device connector config
+# No real provisioning — commands execute on localhost
+device_ip: 127.0.0.1
