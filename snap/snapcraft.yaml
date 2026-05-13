@@ -13,18 +13,15 @@ apps:
   mongod:
     command: bin/start-mongod.sh
     daemon: simple
-    install-mode: disable
 
   server:
     command: bin/start-server.sh
     daemon: simple
-    install-mode: disable
     after: [mongod]
 
   agent:
     command: bin/start-agent.sh
     daemon: simple
-    install-mode: disable
     after: [server]
 
   cli:
@@ -40,6 +37,11 @@ parts:
     plugin: python
     # Build from the repo root; each component is a sub-directory
     source: .
+    stage-packages:
+      - openssh-client
+      - sshpass
+      - qemu-system-x86
+      - qemu-utils
     override-build: |
       python3 -m venv ${CRAFT_PART_INSTALL}
       ${CRAFT_PART_INSTALL}/bin/pip install -U pip setuptools wheel
