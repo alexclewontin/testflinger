@@ -45,6 +45,9 @@ parts:
       ${CRAFT_PART_INSTALL}/bin/pip install -U pip setuptools wheel
       # marshmallow<4: testflinger uses fields.Boolean(default=) removed in 4.x
       ${CRAFT_PART_INSTALL}/bin/pip install "marshmallow<4"
+      # setuptools_scm needs git access; mark the build src as safe and pin version
+      git config --global --add safe.directory ${CRAFT_PART_SRC}
+      export SETUPTOOLS_SCM_PRETEND_VERSION=0.1.hackathon
       ${CRAFT_PART_INSTALL}/bin/pip install ${CRAFT_PART_SRC}/common
       ${CRAFT_PART_INSTALL}/bin/pip install ${CRAFT_PART_SRC}/server
       ${CRAFT_PART_INSTALL}/bin/pip install ${CRAFT_PART_SRC}/agent
